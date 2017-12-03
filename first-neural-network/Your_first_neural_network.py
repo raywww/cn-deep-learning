@@ -5,7 +5,7 @@
 # 
 # 在此项目中，你将构建你的第一个神经网络，并用该网络预测每日自行车租客人数。我们提供了一些代码，但是需要你来实现神经网络（大部分内容）。提交此项目后，欢迎进一步探索该数据和模型。
 
-# In[1]:
+# In[2]:
 
 
 get_ipython().run_line_magic('matplotlib', 'inline')
@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 # 
 # 构建神经网络的关键一步是正确地准备数据。不同尺度级别的变量使网络难以高效地掌握正确的权重。我们在下方已经提供了加载和准备数据的代码。你很快将进一步学习这些代码！
 
-# In[2]:
+# In[3]:
 
 
 data_path = 'Bike-Sharing-Dataset/hour.csv'
@@ -28,7 +28,7 @@ data_path = 'Bike-Sharing-Dataset/hour.csv'
 rides = pd.read_csv(data_path)
 
 
-# In[3]:
+# In[4]:
 
 
 rides.head()
@@ -40,7 +40,7 @@ rides.head()
 # 
 # 下图展示的是数据集中前 10 天左右的骑车人数（某些天不一定是 24 个条目，所以不是精确的 10 天）。你可以在这里看到每小时租金。这些数据很复杂！周末的骑行人数少些，工作日上下班期间是骑行高峰期。我们还可以从上方的数据中看到温度、湿度和风速信息，所有这些信息都会影响骑行人数。你需要用你的模型展示所有这些数据。
 
-# In[4]:
+# In[5]:
 
 
 rides[:24*10].plot(x='dteday', y='cnt')
@@ -50,7 +50,7 @@ rides[:24*10].plot(x='dteday', y='cnt')
 # 
 # 下面是一些分类变量，例如季节、天气、月份。要在我们的模型中包含这些数据，我们需要创建二进制虚拟变量。用 Pandas 库中的 `get_dummies()` 就可以轻松实现。
 
-# In[5]:
+# In[6]:
 
 
 dummy_fields = ['season', 'weathersit', 'mnth', 'hr', 'weekday']
@@ -70,7 +70,7 @@ data.head()
 # 
 # 我们会保存换算因子，以便当我们使用网络进行预测时可以还原数据。
 
-# In[6]:
+# In[7]:
 
 
 quant_features = ['casual', 'registered', 'cnt', 'temp', 'hum', 'windspeed']
@@ -86,7 +86,7 @@ for each in quant_features:
 # 
 # 我们将大约最后 21 天的数据保存为测试数据集，这些数据集会在训练完网络后使用。我们将使用该数据集进行预测，并与实际的骑行人数进行对比。
 
-# In[7]:
+# In[8]:
 
 
 # Save data for approximately the last 21 days 
@@ -103,7 +103,7 @@ test_features, test_targets = test_data.drop(target_fields, axis=1), test_data[t
 
 # 我们将数据拆分为两个数据集，一个用作训练，一个在网络训练完后用来验证网络。因为数据是有时间序列特性的，所以我们用历史数据进行训练，然后尝试预测未来数据（验证数据集）。
 
-# In[8]:
+# In[9]:
 
 
 # Hold out the last 60 days or so of the remaining data as a validation set
@@ -133,7 +133,7 @@ val_features, val_targets = features[-60*24:], targets[-60*24:]
 # 
 #   
 
-# In[9]:
+# In[10]:
 
 
 class NeuralNetwork(object):
@@ -232,7 +232,7 @@ class NeuralNetwork(object):
         return final_outputs
 
 
-# In[10]:
+# In[11]:
 
 
 def MSE(y, Y):
@@ -243,7 +243,7 @@ def MSE(y, Y):
 # 
 # 运行这些单元测试，检查你的网络实现是否正确。这样可以帮助你确保网络已正确实现，然后再开始训练网络。这些测试必须成功才能通过此项目。
 
-# In[11]:
+# In[12]:
 
 
 import unittest
@@ -326,15 +326,15 @@ unittest.TextTestRunner().run(suite)
 # 
 # 隐藏节点越多，模型的预测结果就越准确。尝试不同的隐藏节点的数量，看看对性能有何影响。你可以查看损失字典，寻找网络性能指标。如果隐藏单元的数量太少，那么模型就没有足够的空间进行学习，如果太多，则学习方向就有太多的选择。选择隐藏单元数量的技巧在于找到合适的平衡点。
 
-# In[15]:
+# In[28]:
 
 
 import sys
 
 ### Set the hyperparameters here ###
-iterations = 300
-learning_rate = 0.1
-hidden_nodes = 4
+iterations = 6000
+learning_rate = 0.5
+hidden_nodes = 6
 output_nodes = 1
 
 N_i = train_features.shape[1]
@@ -358,7 +358,7 @@ for ii in range(iterations):
     losses['validation'].append(val_loss)
 
 
-# In[16]:
+# In[29]:
 
 
 plt.plot(losses['train'], label='Training loss')
@@ -371,7 +371,7 @@ _ = plt.ylim()
 # 
 # 使用测试数据看看网络对数据建模的效果如何。如果完全错了，请确保网络中的每步都正确实现。
 
-# In[17]:
+# In[30]:
 
 
 fig, ax = plt.subplots(figsize=(8,4))
@@ -397,8 +397,11 @@ _ = ax.set_xticklabels(dates[12::24], rotation=45)
 # > **注意**：你可以通过双击该单元编辑文本。如果想要预览文本，请按 Control + Enter
 # 
 # #### 请将你的答案填写在下方
-# 模型能比较准确的预测共享单车随时间的使用量变化趋势，但是对于使用的人数的预测量不准确。
+# 模型对于前半段日期的使用人数预测比较准确，对于后面的预测不准确。
 # 
-# 可能是在使用梯度下降算法时陷入了局部极小值，或者因为给出的特征不足以区分数据的不同等。
+# 超参数选择的过程中，发现，迭代次数/隐藏层单元数选择较小时（300/4），预测结果跟当前选择的正好互补，前部分预测不准确，后部分预测比较准确。
 # 
-# 比如：12月21日之后使用人数显著下降，可能是因为圣诞假期到来，但是数据特征中只有12月25日的“holiday”值为1，其余为0，没有真实的反映。
+# 预测效果不理想的原因可能是：
+# 1. 超参数的选择不是最优的，需要继续优化；
+# 2. 是否需要增加隐藏层的数目；
+# 3. 数据是否还需要进一步处理，比如：12月21日之后使用人数显著下降，可能是因为圣诞假期到来，但是数据特征中只有12月25日的“holiday”值为1，其余为0。
