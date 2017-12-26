@@ -108,7 +108,7 @@ def normalize(x):
     : return: Numpy array of normalize data
     """
     # TODO: Implement Function
-    return (x / 255)
+    return ((x-np.min(x))/(np.max(x)-np.min(x)))
 
 
 """
@@ -129,6 +129,9 @@ tests.test_normalize(normalize)
 
 from sklearn.preprocessing import LabelBinarizer
 
+label_binarizer = LabelBinarizer()
+label_binarizer.fit(range(10))
+
 def one_hot_encode(x):
     """
     One hot encode a list of sample labels. Return a one-hot encoded vector for each label.
@@ -137,10 +140,7 @@ def one_hot_encode(x):
     """
     # TODO: Implement Function
     
-    label_binarizer = LabelBinarizer()
-    label_binarizer.fit(range(10))
-    label_ids = label_binarizer.transform(x)
-    return label_ids
+    return label_binarizer.transform(x)
 
 
 """
@@ -304,16 +304,16 @@ def conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ks
     # 添加偏置bias
     conv_layer = tf.nn.bias_add(conv_layer, bias)
     
-    # 添加非线性激活 ReLU
-    conv_layer = tf.nn.relu(conv_layer)
-    
     # 应用最大池化
     conv_layer = tf.nn.max_pool(conv_layer, 
                                 ksize=[1, pool_ksize[0], pool_ksize[1], 1], 
                                 strides = [1, pool_strides[0], pool_strides[1], 1],
                                 padding = 'SAME')
+    
+    # 添加非线性激活 ReLU
+    conv_layer = tf.nn.relu(conv_layer)
+    
     return conv_layer
-
 
 """
 DON'T MODIFY ANYTHING IN THIS CELL THAT IS BELOW THIS LINE
@@ -336,11 +336,9 @@ def flatten(x_tensor):
     : return: A tensor of size (Batch Size, Flattened Image Size).
     """
     # TODO: Implement Function
-    x_tensor_shape = x_tensor.shape.as_list()
-    flattened_size = 1
-    for i in range(1, len(x_tensor_shape)):
-        flattened_size *= x_tensor_shape[i]
-    return tf.reshape(x_tensor, [-1, flattened_size])
+    x_shape = x_tensor.shape.as_list()
+    
+    return tf.reshape(x_tensor, [-1, x_shape[1]*x_shape[2]*x_shape[3]])
 
 
 """
@@ -432,7 +430,7 @@ def conv_net(x, keep_prob):
     #    Play around with different number of outputs, kernel size and stride
     # Function Definition from Above:
     #    conv2d_maxpool(x_tensor, conv_num_outputs, conv_ksize, conv_strides, pool_ksize, pool_strides)
-    conv1 = conv2d_maxpool(x, 32, (3,3), (2,2), (2,2), (2,2))
+    conv1 = conv2d_maxpool(x, 32, (3,3), (1,1), (2,2), (2,2))
     conv2 = conv2d_maxpool(conv1, 64, (3,3), (1,1), (2,2), (2,2))
     conv3 = conv2d_maxpool(conv2, 128, (3,3), (1,1), (2,2), (2,2))
 
@@ -548,7 +546,7 @@ def print_stats(session, feature_batch, label_batch, cost, accuracy):
     : accuracy: TensorFlow accuracy function
     """
     # TODO: Implement Function
-    loss = session.run(cost, feed_dict={x:valid_features, y:valid_labels, keep_prob:1.0})
+    loss = session.run(cost, feed_dict={x:feature_batch, y:label_batch, keep_prob:1.0})
     valid_acc = session.run(accuracy, feed_dict={x:valid_features, y:valid_labels, keep_prob:1.0})
     
     print("Loss: {:>10.4f} Validation Accuracy: {:.6f}".format(loss, valid_acc))
@@ -586,7 +584,10 @@ keep_probability = 0.75
 """
 DON'T MODIFY ANYTHING IN THIS CELL
 """
+import time
 print('Checking the Training on a Single Batch...')
+
+start = time.time()
 with tf.Session() as sess:
     # Initializing the variables
     sess.run(tf.global_variables_initializer())
@@ -598,6 +599,8 @@ with tf.Session() as sess:
             train_neural_network(sess, optimizer, keep_probability, batch_features, batch_labels)
         print('Epoch {:>2}, CIFAR-10 Batch {}:  '.format(epoch + 1, batch_i), end='')
         print_stats(sess, batch_features, batch_labels, cost, accuracy)
+
+print("\nTime cost: {:.4f} s".format(time.time()-start))
 
 
 # ### 完全训练模型
