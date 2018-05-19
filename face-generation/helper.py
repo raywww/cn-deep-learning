@@ -136,7 +136,7 @@ def download_extract(database_name, data_path):
         url = 'https://s3.cn-north-1.amazonaws.com.cn/static-documents/nd101/celeba.zip'
         hash_code = '00d2c5bc6d35e252742224ab0c1e8fcb'
         extract_path = os.path.join(data_path, 'img_align_celeba')
-        save_path = os.path.join(data_path, 'celeba.zip')
+        save_path = os.path.join(data_path, 'img_align_celeba.zip')
         extract_fn = _unzip
     elif database_name == DATASET_MNIST_NAME:
         url = 'http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz'
